@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DataVault Analytics — Fuel Revenue Intelligence</title>
+
+<!-- Chart.js library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+
+<!-- App Styles -->
+<style>
+/* ================================================
+   DataVault Analytics - style.css
+   Theme: Clean Light
+   ================================================ */
+
+:root {
+  --bg:        #f1f5f9;
+  --surface:   #ffffff;
+  --surface2:  #f8fafc;
+  --border:    #e2e8f0;
+  --border2:   #cbd5e1;
+  --accent:    #6366f1;
+  --accent2:   #3b82f6;
+  --accent3:   #10b981;
+  --accent4:   #f59e0b;
+  --accent5:   #8b5cf6;
+  --text:      #1e293b;
+  --text2:     #475569;
+  --muted:     #94a3b8;
+  --danger:    #ef4444;
+  --success:   #10b981;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,.08);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:13px;scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Poppins','Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+body::before{content:'';position:fixed;inset:0;
+  background-image:radial-gradient(circle,rgba(99,102,241,.06) 1px,transparent 1px);
+  background-size:32px 32px;pointer-events:none;z-index:0;}
+
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
+  padding:12px 28px;background:var(--surface);border-bottom:1px solid var(--border);box-shadow:var(--shadow-sm);}
+.nav-brand{display:flex;align-items:center;gap:12px;}
+.nav-logo{width:38px;height:38px;background:linear-gradient(135deg,#6366f1,#3b82f6);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:15px;color:#fff;
+  letter-spacing:1px;box-shadow:0 2px 8px rgba(99,102,241,.35);}
+.nav-title h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;letter-spacing:2px;color:var(--text);}
+.nav-title p{font-size:10px;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;}
+.nav-tabs{display:flex;gap:4px;}
+.tab-btn{padding:7px 16px;border:1px solid transparent;border-radius:6px;cursor:pointer;
+  font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;transition:all .2s;
+  background:transparent;color:var(--text2);font-family:inherit;}
+.tab-btn:hover{background:#f1f5f9;color:var(--text);}
+.tab-btn.active{background:#eef2ff;color:var(--accent);border-color:#c7d2fe;box-shadow:0 0 0 2px rgba(99,102,241,.1);}
+.nav-right{display:flex;align-items:center;gap:14px;}
+.live-pill{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--accent3);font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--accent3);animation:blink 1.8s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.rec-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);
+  background:var(--surface2);padding:4px 10px;border-radius:20px;border:1px solid var(--border);}
+
+.panel{display:none;position:relative;z-index:1;}
+.panel.active{display:block;}
+
+#dash{padding:22px 28px;}
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:16px 18px;position:relative;overflow:hidden;box-shadow:var(--shadow-sm);
+  transition:transform .2s,box-shadow .2s;animation:slideUp .4s ease both;}
+.kpi:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--kc,var(--accent));border-radius:12px 12px 0 0;}
+.kpi:nth-child(2){--kc:var(--accent2)}.kpi:nth-child(3){--kc:var(--accent3)}
+.kpi:nth-child(4){--kc:var(--accent4)}.kpi:nth-child(5){--kc:var(--accent5)}
+.kpi:nth-child(1){animation-delay:.05s}.kpi:nth-child(2){animation-delay:.1s}
+.kpi:nth-child(3){animation-delay:.15s}.kpi:nth-child(4){animation-delay:.2s}
+.kpi:nth-child(5){animation-delay:.25s}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.kpi-lbl{font-size:10px;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px;font-weight:600;}
+.kpi-val{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;line-height:1;color:var(--text);}
+.kpi-meta{font-size:10px;color:var(--muted);margin-top:5px;}
+
+.charts-r1{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px;}
+.charts-r2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:18px;box-shadow:var(--shadow-sm);animation:slideUp .5s ease both;}
+.cc-head{margin-bottom:14px;}
+.cc-title{font-size:13px;font-weight:700;color:var(--text);letter-spacing:.3px;}
+.cc-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+canvas{max-height:210px;}
+
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:160px;gap:8px;color:var(--muted);}
+.empty-icon{font-size:30px;opacity:.3;}
+.empty-txt{font-size:11px;letter-spacing:.5px;text-transform:uppercase;}
+
+.outlet-tbl{width:100%;border-collapse:collapse;}
+.outlet-tbl th{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:700;
+  text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);background:var(--surface2);}
+.outlet-tbl td{padding:10px 10px;font-size:12px;border-bottom:1px solid var(--border);}
+.outlet-tbl tr:last-child td{border:none}
+.outlet-tbl tr:hover td{background:#f8faff;}
+.tag{font-size:9px;padding:2px 8px;border-radius:20px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;}
+.tag-n{background:#dbeafe;color:#1d4ed8}
+.tag-w{background:#fff7ed;color:#c2410c}
+.tag-s{background:#dcfce7;color:#15803d}
+.tag-e{background:#f3e8ff;color:#7e22ce}
+.rev-bar{height:3px;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));margin-top:4px;}
+.mono{font-family:'DM Mono',monospace;}
+
+#entry{padding:28px;}
+.entry-wrap{max-width:620px;margin:0 auto;}
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;box-shadow:var(--shadow-md);}
+.form-card h2{font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.form-card>p{font-size:11px;color:var(--muted);margin-bottom:22px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group label{font-size:11px;color:var(--text2);font-weight:600;letter-spacing:.3px;}
+.form-group input,.form-group select{background:var(--surface2);border:1.5px solid var(--border2);
+  border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;
+  transition:border-color .2s,box-shadow .2s;font-family:inherit;}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.1);}
+.submit-btn{width:100%;padding:12px;margin-top:10px;border:none;border-radius:8px;cursor:pointer;
+  background:linear-gradient(135deg,#6366f1,#3b82f6);color:#fff;font-size:14px;font-weight:700;
+  letter-spacing:.5px;transition:opacity .2s,transform .1s;font-family:inherit;
+  box-shadow:0 2px 10px rgba(99,102,241,.35);}
+.submit-btn:hover{opacity:.88;transform:translateY(-1px);}
+.submit-btn:active{transform:translateY(0);}
+.form-success{display:none;text-align:center;padding:11px;margin-top:12px;border-radius:8px;
+  background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;font-size:12px;font-weight:600;}
+
+#records{padding:22px 28px;}
+.records-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.records-header h2{font-size:16px;font-weight:700;color:var(--text);}
+.clear-btn{padding:7px 14px;border:1px solid rgba(239,68,68,.4);border-radius:6px;cursor:pointer;
+  background:rgba(239,68,68,.06);color:var(--danger);font-size:11px;font-weight:600;transition:all .2s;font-family:inherit;}
+.clear-btn:hover{background:rgba(239,68,68,.14);}
+.search-bar{margin-bottom:12px;}
+.search-bar input{width:100%;background:var(--surface);border:1.5px solid var(--border2);
+  border-radius:8px;padding:9px 14px;color:var(--text);font-size:13px;outline:none;
+  transition:border-color .2s;font-family:inherit;}
+.search-bar input:focus{border-color:var(--accent2);}
+.data-tbl-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-sm);}
+.data-tbl{width:100%;border-collapse:collapse;min-width:900px;}
+.data-tbl th{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);font-weight:700;
+  text-align:left;padding:10px 14px;border-bottom:2px solid var(--border);background:var(--surface2);position:sticky;top:0;}
+.data-tbl td{padding:9px 14px;font-size:12px;border-bottom:1px solid var(--border);}
+.data-tbl tr:last-child td{border:none}
+.data-tbl tr:hover td{background:#f8f9ff;}
+.del-btn{padding:3px 8px;border:1px solid rgba(239,68,68,.3);border-radius:4px;cursor:pointer;
+  background:transparent;color:var(--danger);font-size:10px;transition:all .15s;}
+.del-btn:hover{background:rgba(239,68,68,.1);}
+.pg-controls{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;border-top:1px solid var(--border);background:var(--surface2);border-radius:0 0 12px 12px;}
+.pg-info{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
+.pg-btns{display:flex;gap:6px;}
+.pg-btn{padding:5px 12px;border:1px solid var(--border2);border-radius:5px;cursor:pointer;
+  background:var(--surface);color:var(--text2);font-size:11px;font-weight:600;transition:all .15s;font-family:inherit;}
+.pg-btn:hover{border-color:var(--accent);color:var(--accent);}
+.pg-btn:disabled{opacity:.35;cursor:default;}
+
+.toast{position:fixed;bottom:22px;right:22px;z-index:999;padding:11px 18px;border-radius:8px;
+  font-size:12px;font-weight:600;opacity:0;transform:translateY(8px);transition:all .25s;
+  pointer-events:none;box-shadow:var(--shadow-md);}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.ok{background:var(--success);color:#fff;}
+.toast.err{background:var(--danger);color:#fff;}
+
+</style>
+</head>
+<body>
+
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">DV</div>
+    <div class="nav-title">
+      <h1>DATAVAULT</h1>
+      <p>Fuel Revenue Intelligence Platform</p>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('dash',this)">📊 Dashboard</button>
+    <button class="tab-btn" onclick="switchTab('entry',this)">➕ Add Data</button>
+    <button class="tab-btn" onclick="switchTab('records',this)">🗂 Records</button>
+  </div>
+  <div class="nav-right">
+    <div class="live-pill"><div class="live-dot"></div>Live</div>
+    <div class="rec-count" id="recCount">0 records</div>
+  </div>
+</nav>
+
+<!-- ═══════════════ DASHBOARD PANEL ═══════════════ -->
+<div id="dash" class="panel active">
+
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-lbl">Total Revenue</div>
+      <div class="kpi-val" id="kRevenue">₹0</div>
+      <div class="kpi-meta">Net Revenue (INR)</div></div>
+    <div class="kpi"><div class="kpi-lbl">Volume Sold</div>
+      <div class="kpi-val" id="kVolume">0 L</div>
+      <div class="kpi-meta">Total Litres / Kg</div></div>
+    <div class="kpi"><div class="kpi-lbl">Transactions</div>
+      <div class="kpi-val" id="kTxns">0</div>
+      <div class="kpi-meta">Total Sale Records</div></div>
+    <div class="kpi"><div class="kpi-lbl">Avg Sale Value</div>
+      <div class="kpi-val" id="kAvg">₹0</div>
+      <div class="kpi-meta">Per Transaction</div></div>
+    <div class="kpi"><div class="kpi-lbl">Active Outlets</div>
+      <div class="kpi-val" id="kOutlets">0</div>
+      <div class="kpi-meta">Unique Outlets</div></div>
+  </div>
+
+  <div class="charts-r1">
+    <div class="chart-card">
+      <div class="cc-head"><div class="cc-title">Monthly Revenue Trend</div>
+        <div class="cc-sub">Net revenue grouped by month</div></div>
+      <div id="wrap-monthly"><canvas id="chartMonthly"></canvas>
+        <div class="empty-state" id="emptyMonthly"><div class="empty-icon">📈</div>
+          <div class="empty-txt">Add data to see trend</div></div></div>
+    </div>
+    <div class="chart-card">
+      <div class="cc-head"><div class="cc-title">Fuel Revenue Mix</div>
+        <div class="cc-sub">Share by fuel type</div></div>
+      <div id="wrap-mix"><canvas id="chartMix"></canvas>
+        <div class="empty-state" id="emptyMix"><div class="empty-icon">⛽</div>
+          <div class="empty-txt">Add data to see mix</div></div></div>
+    </div>
+  </div>
+
+  <div class="charts-r2">
+    <div class="chart-card">
+      <div class="cc-head"><div class="cc-title">Zone Performance</div>
+        <div class="cc-sub">Revenue by region</div></div>
+      <canvas id="chartZone"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="cc-head"><div class="cc-title">Payment Modes</div>
+        <div class="cc-sub">Transaction split</div></div>
+      <canvas id="chartPayment"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="cc-head"><div class="cc-title">Fuel Volume</div>
+        <div class="cc-sub">Units sold by type</div></div>
+      <canvas id="chartVolume"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-card" style="margin-bottom:24px;">
+    <div class="cc-head"><div class="cc-title">Top Outlets by Revenue</div>
+      <div class="cc-sub">Ranked leaderboard — all zones</div></div>
+    <table class="outlet-tbl">
+      <thead><tr>
+        <th>#</th><th>Outlet</th><th>Region</th><th>Zone</th>
+        <th>Fuel</th><th>Revenue</th><th>Share</th>
+      </tr></thead>
+      <tbody id="outletBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ═══════════════ ENTRY PANEL ═══════════════ -->
+<div id="entry" class="panel">
+  <div class="entry-grid">
+
+    <!-- MANUAL FORM -->
+    <div class="form-card">
+      <h2>Manual Entry</h2>
+      <p>Fill in the sale details below and click Save Record.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Sale Date</label>
+          <input type="date" id="fDate"/>
+        </div>
+        <div class="form-group">
+          <label>Outlet Name</label>
+          <input type="text" id="fOutlet" placeholder="e.g. Andheri West DV"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Region</label>
+          <input type="text" id="fRegion" placeholder="e.g. Mumbai Metro"/>
+        </div>
+        <div class="form-group">
+          <label>Zone</label>
+          <select id="fZone">
+            <option value="">Select Zone</option>
+            <option>North</option><option>South</option>
+            <option>East</option><option>West</option><option>Central</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fuel Type</label>
+          <select id="fFuel">
+            <option value="">Select Fuel</option>
+            <option>Petrol</option><option>Diesel</option>
+            <option>CNG</option><option>LPG</option>
+            <option>Power (Premium)</option><option>HSD Industrial</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Quantity Sold (L/Kg)</label>
+          <input type="number" id="fQty" placeholder="e.g. 45.5" min="0" step="0.01"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Unit Price (₹/L)</label>
+          <input type="number" id="fPrice" placeholder="e.g. 94.72" min="0" step="0.01"/>
+        </div>
+        <div class="form-group">
+          <label>Discount (%)</label>
+          <input type="number" id="fDiscount" placeholder="0" min="0" max="100" step="0.1"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Payment Mode</label>
+          <select id="fPayment">
+            <option value="">Select Mode</option>
+            <option>Cash</option><option>UPI</option>
+            <option>Card</option><option>Fleet Card</option><option>Credit</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Shift</label>
+          <select id="fShift">
+            <option value="">Select Shift</option>
+            <option>Morning</option><option>Afternoon</option><option>Night</option>
+          </select>
+        </div>
+      </div>
+      <button class="submit-btn" onclick="saveRecord()">💾 SAVE RECORD</button>
+      <div class="form-success" id="formSuccess">✅ Record saved! Dashboard updated.</div>
+    </div>
+
+
+  </div>
+</div>
+
+<!-- ═══════════════ RECORDS PANEL ═══════════════ -->
+<div id="records" class="panel">
+  <div class="records-header">
+    <h2>All Records</h2>
+    <button class="clear-btn" onclick="clearAllData()">🗑 Clear All</button>
+  </div>
+  <div class="search-bar">
+    <input type="text" id="searchBox" placeholder="Search by outlet, region, fuel, payment..." oninput="renderTable()"/>
+  </div>
+  <div class="data-tbl-wrap">
+    <table class="data-tbl">
+      <thead><tr>
+        <th>#</th><th>Date</th><th>Outlet</th><th>Region</th><th>Zone</th>
+        <th>Fuel</th><th>Qty (L)</th><th>Price</th><th>Discount</th>
+        <th>Net Revenue</th><th>Payment</th><th>Shift</th><th></th>
+      </tr></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div class="pg-controls">
+      <div class="pg-info" id="pgInfo">Showing 0–0 of 0</div>
+      <div class="pg-btns">
+        <button class="pg-btn" id="pgPrev" onclick="changePage(-1)">← Prev</button>
+        <button class="pg-btn" id="pgNext" onclick="changePage(1)">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- Scripts — load order matters -->
+
+<script>
+/* config.js */
+// ──────────────────────────────────────────────
+//  CHART INSTANCES - config.js
+// ──────────────────────────────────────────────
+let cMonthly=null, cMix=null, cZone=null, cPayment=null, cVolume=null;
+
+// Chart.js global defaults - tuned for light white cards
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.font.family = "'Poppins','Segoe UI',sans-serif";
+Chart.defaults.font.size = 11;
+
+// Grid lines - light gray for white card backgrounds
+const GRID = { color: 'rgba(226,232,240,0.9)', drawBorder: false };
+
+// Fuel type colors
+const FUEL_COLORS = {
+  'Petrol':          '#f97316',
+  'Diesel':          '#3b82f6',
+  'CNG':             '#10b981',
+  'Power (Premium)': '#8b5cf6',
+  'LPG':             '#f59e0b',
+  'HSD Industrial':  '#64748b',
+};
+
+// Payment mode colors
+const PAYMENT_COLORS = {
+  'Cash':       '#64748b',
+  'UPI':        '#10b981',
+  'Card':       '#3b82f6',
+  'Fleet Card': '#f59e0b',
+  'Credit':     '#8b5cf6',
+};
+
+// Zone colors
+const ZONE_COLORS = {
+  'North':   '#3b82f6',
+  'South':   '#10b981',
+  'East':    '#8b5cf6',
+  'West':    '#f97316',
+  'Central': '#f59e0b',
+};
+
+// Zone → CSS tag class suffix
+const ZONE_CLASS = { 'North':'n','South':'s','East':'e','West':'w','Central':'n' };
+
+function destroyChart(c){ if(c){ try{c.destroy();}catch(e){} } }
+
+
+/* storage.js */
+//  STORAGE & STATE
+// ──────────────────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'datavault_records_v2';
+let DB = [];
+let page = 0;
+const PAGE_SIZE = 20;
+
+function loadDB(){ try{ const r=localStorage.getItem(STORAGE_KEY); DB=r?JSON.parse(r):[]; }catch(e){DB=[];} }
+function saveDB(){ try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(DB)); }catch(e){} }
+function addRecords(rows){ DB.push(...rows); saveDB(); refresh(); }
+
+// ──────────────────────────────────────────────────────────────────────────────
+
+
+/* dashboard.js */
+//  REFRESH — rebuilds all KPIs + charts from DB
+// ──────────────────────────────────────────────────────────────────────────────
+function refresh(){
+  const n = DB.length;
+  document.getElementById('recCount').textContent = n.toLocaleString()+' records';
+
+  const totalRev   = DB.reduce((s,r)=>s+r.net_revenue,0);
+  const totalVol   = DB.reduce((s,r)=>s+r.quantity_sold,0);
+  const avgSale    = n ? totalRev/n : 0;
+  const outlets    = new Set(DB.map(r=>r.outlet_name)).size;
+
+  document.getElementById('kRevenue').textContent = fmtCr(totalRev);
+  document.getElementById('kVolume').textContent  = fmtNum(totalVol)+'L';
+  document.getElementById('kTxns').textContent    = n.toLocaleString();
+  document.getElementById('kAvg').textContent     = '₹'+fmtNum(avgSale);
+  document.getElementById('kOutlets').textContent = outlets;
+
+  renderMonthly();
+  renderMix();
+  renderZone();
+  renderPayment();
+  renderVolumeChart();
+  renderOutletTable();
+  renderTable();
+}
+
+
+/* charts.js */
+// monthly
+function renderMonthly(){
+  const byMonth={};
+  DB.forEach(r=>{
+    const m=r.sale_date?r.sale_date.substring(0,7):'Unknown';
+    if(!byMonth[m]) byMonth[m]={};
+    const fuel=r.fuel_type||'Other';
+    byMonth[m][fuel]=(byMonth[m][fuel]||0)+r.net_revenue;
+  });
+  const months=Object.keys(byMonth).sort();
+  const fuels=[...new Set(DB.map(r=>r.fuel_type||'Other'))];
+  const showEmpty=months.length===0;
+  document.getElementById('emptyMonthly').style.display=showEmpty?'flex':'none';
+  document.getElementById('chartMonthly').style.display=showEmpty?'none':'block';
+  if(showEmpty){ destroyChart(cMonthly); cMonthly=null; return; }
+
+  const datasets=fuels.map(f=>({
+    label:f,
+    data:months.map(m=>(byMonth[m][f]||0)/100000),
+    borderColor:FUEL_COLORS[f]||'#888',
+    backgroundColor:(FUEL_COLORS[f]||'#888')+'22',
+    borderWidth:2,tension:.4,fill:true,pointRadius:2,
+  }));
+
+  destroyChart(cMonthly);
+  cMonthly=new Chart(document.getElementById('chartMonthly'),{
+    type:'line',data:{labels:months,datasets},
+    options:{responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{position:'top',labels:{boxWidth:9,padding:12}}},
+      scales:{
+        x:{grid:GRID,ticks:{maxTicksLimit:8}},
+        y:{grid:GRID,ticks:{callback:v=>'₹'+v.toFixed(1)+'L'}}
+      }
+    }
+  });
+}
+
+// fuel mix
+function renderMix(){
+  const byFuel={};
+  DB.forEach(r=>{ const f=r.fuel_type||'Other'; byFuel[f]=(byFuel[f]||0)+r.net_revenue; });
+  const labels=Object.keys(byFuel);
+  const showEmpty=labels.length===0;
+  document.getElementById('emptyMix').style.display=showEmpty?'flex':'none';
+  document.getElementById('chartMix').style.display=showEmpty?'none':'block';
+  if(showEmpty){ destroyChart(cMix); cMix=null; return; }
+
+  destroyChart(cMix);
+  cMix=new Chart(document.getElementById('chartMix'),{
+    type:'doughnut',
+    data:{labels,datasets:[{
+      data:labels.map(l=>byFuel[l]),
+      backgroundColor:labels.map(l=>FUEL_COLORS[l]||'#888'),
+      borderColor:'#ffffff',borderWidth:3,hoverOffset:6
+    }]},
+    options:{responsive:true,maintainAspectRatio:true,cutout:'60%',
+      plugins:{legend:{position:'bottom',labels:{boxWidth:9,padding:10}},
+        tooltip:{callbacks:{label:ctx=>{
+          const total=ctx.dataset.data.reduce((a,b)=>a+b,0);
+          return ` ${ctx.label}: ${(ctx.parsed/total*100).toFixed(1)}%`;
+        }}}
+      }
+    }
+  });
+}
+
+// zone
+function renderZone(){
+  const byZone={};
+  DB.forEach(r=>{ const z=r.zone||'Other'; byZone[z]=(byZone[z]||0)+r.net_revenue; });
+  const labels=Object.keys(byZone).sort();
+  destroyChart(cZone);
+  cZone=new Chart(document.getElementById('chartZone'),{
+    type:'bar',
+    data:{labels,datasets:[{
+      data:labels.map(l=>byZone[l]/100000),
+      backgroundColor:labels.map(l=>ZONE_COLORS[l]||'#888'),
+      borderRadius:5,borderSkipped:false
+    }]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>' ₹'+ctx.parsed.x.toFixed(1)+'L'}}
+      },
+      scales:{
+        x:{grid:GRID,ticks:{callback:v=>'₹'+v+'L'}},
+        y:{grid:{display:false}}
+      }
+    }
+  });
+}
+
+// payment
+function renderPayment(){
+  const byPay={};
+  DB.forEach(r=>{ const p=r.payment_mode||'Other'; byPay[p]=(byPay[p]||0)+1; });
+  const labels=Object.keys(byPay);
+  destroyChart(cPayment);
+  cPayment=new Chart(document.getElementById('chartPayment'),{
+    type:'polarArea',
+    data:{labels,datasets:[{
+      data:labels.map(l=>byPay[l]),
+      backgroundColor:labels.map(l=>(PAYMENT_COLORS[l]||'#888')+'bb'),
+      borderColor:labels.map(l=>PAYMENT_COLORS[l]||'#888'),
+      borderWidth:1.5
+    }]},
+    options:{responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{position:'bottom',labels:{boxWidth:9,padding:10}}},
+      scales:{r:{grid:{color:'rgba(226,232,240,.9)'},ticks:{display:false}}}
+    }
+  });
+}
+
+// volume bar
+function renderVolumeChart(){
+  const byFuel={};
+  DB.forEach(r=>{ const f=r.fuel_type||'Other'; byFuel[f]=(byFuel[f]||0)+r.quantity_sold; });
+  const labels=Object.keys(byFuel);
+  destroyChart(cVolume);
+  cVolume=new Chart(document.getElementById('chartVolume'),{
+    type:'bar',
+    data:{labels,datasets:[{
+      data:labels.map(l=>byFuel[l]),
+      backgroundColor:labels.map(l=>FUEL_COLORS[l]||'#888'),
+      borderRadius:5,borderSkipped:false
+    }]},
+    options:{responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{display:false}},
+        y:{grid:GRID,ticks:{callback:v=>fmtNum(v)+'L'}}
+      }
+    }
+  });
+}
+
+// outlet table
+function renderOutletTable(){
+  const byOutlet={};
+  DB.forEach(r=>{
+    const k=r.outlet_name||'Unknown';
+    if(!byOutlet[k]) byOutlet[k]={name:k,region:r.region||'',zone:r.zone||'',rev:0,fuel:r.fuel_type||''};
+    byOutlet[k].rev+=r.net_revenue;
+  });
+  const outlets=Object.values(byOutlet).sort((a,b)=>b.rev-a.rev).slice(0,10);
+  const totalRev=outlets.reduce((s,o)=>s+o.rev,0);
+  const maxRev=outlets[0]?.rev||1;
+  const RANK=['🥇','🥈','🥉'];
+  const tbody=document.getElementById('outletBody');
+  if(outlets.length===0){
+    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;font-size:11px;letter-spacing:1px">NO DATA YET — ADD RECORDS TO SEE LEADERBOARD</td></tr>';
+    return;
+  }
+  tbody.innerHTML=outlets.map((o,i)=>{
+    const zClass={'North':'n','South':'s','East':'e','West':'w','Central':'n'}[o.zone]||'w';
+    const share=totalRev?(o.rev/totalRev*100).toFixed(1)+'%':'—';
+    const barW=(o.rev/maxRev*100).toFixed(0);
+    return `<tr>
+      <td>${RANK[i]||i+1}</td>
+      <td>${o.name}</td>
+      <td style="color:var(--text2)">${o.region}</td>
+      <td><span class="tag tag-${zClass}">${o.zone}</span></td>
+      <td style="color:var(--text2)">${o.fuel}</td>
+      <td><span class="mono">₹${fmtNum(o.rev)}</span>
+        <div class="rev-bar" style="width:${barW}%"></div></td>
+      <td class="mono" style="color:var(--muted)">${share}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+
+
+/* records.js */
+//  DATA TABLE + PAGINATION
+// ──────────────────────────────────────────────────────────────────────────────
+function renderTable(){
+  const q=(document.getElementById('searchBox')?.value||'').toLowerCase();
+  const filtered=q ? DB.filter(r=>
+    (r.outlet_name||'').toLowerCase().includes(q)||
+    (r.region||'').toLowerCase().includes(q)||
+    (r.fuel_type||'').toLowerCase().includes(q)||
+    (r.payment_mode||'').toLowerCase().includes(q)
+  ) : DB;
+
+  const total=filtered.length;
+  const maxPage=Math.max(0,Math.ceil(total/PAGE_SIZE)-1);
+  if(page>maxPage) page=maxPage;
+  const start=page*PAGE_SIZE, end=Math.min(start+PAGE_SIZE,total);
+  const slice=filtered.slice(start,end);
+
+  document.getElementById('pgInfo').textContent=`Showing ${start+1}–${end} of ${total}`;
+  document.getElementById('pgPrev').disabled=page===0;
+  document.getElementById('pgNext').disabled=end>=total;
+
+  const FUEL_DOT={
+    'Petrol':'#f97316','Diesel':'#3b82f6','CNG':'#10b981',
+    'Power (Premium)':'#a855f7','LPG':'#f59e0b','HSD Industrial':'#64748b'
+  };
+  const tbody=document.getElementById('tableBody');
+  if(total===0){
+    tbody.innerHTML='<tr><td colspan="13" style="text-align:center;color:var(--muted);padding:28px;font-size:11px;letter-spacing:1px">NO RECORDS YET — USE "ADD DATA" TAB</td></tr>';
+    return;
+  }
+  tbody.innerHTML=slice.map((r,i)=>{
+    const dot=FUEL_DOT[r.fuel_type]||'#888';
+    const idx=DB.indexOf(r);
+    return `<tr>
+      <td class="mono" style="color:var(--muted)">${start+i+1}</td>
+      <td class="mono">${r.sale_date||'—'}</td>
+      <td>${r.outlet_name||'—'}</td>
+      <td style="color:var(--text2)">${r.region||'—'}</td>
+      <td>${r.zone||'—'}</td>
+      <td><span style="color:${dot};font-weight:600">${r.fuel_type||'—'}</span></td>
+      <td class="mono">${(r.quantity_sold||0).toFixed(2)}</td>
+      <td class="mono">₹${(r.unit_price||0).toFixed(2)}</td>
+      <td class="mono">${(r.discount_pct||0).toFixed(1)}%</td>
+      <td class="mono" style="color:var(--accent3)">₹${fmtNum(r.net_revenue||0)}</td>
+      <td>${r.payment_mode||'—'}</td>
+      <td>${r.shift||'—'}</td>
+      <td><button class="del-btn" onclick="deleteRecord(${idx})">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function changePage(d){ page+=d; renderTable(); }
+function deleteRecord(i){ DB.splice(i,1); saveDB(); refresh(); showToast('Record deleted','ok'); }
+
+// ──────────────────────────────────────────────────────────────────────────────
+
+
+/* form.js */
+//  MANUAL SAVE
+// ──────────────────────────────────────────────────────────────────────────────
+function saveRecord(){
+  const d={
+    sale_date:   document.getElementById('fDate').value,
+    outlet_name: document.getElementById('fOutlet').value.trim(),
+    region:      document.getElementById('fRegion').value.trim(),
+    zone:        document.getElementById('fZone').value,
+    fuel_type:   document.getElementById('fFuel').value,
+    quantity_sold: parseFloat(document.getElementById('fQty').value)||0,
+    unit_price:  parseFloat(document.getElementById('fPrice').value)||0,
+    discount_pct:parseFloat(document.getElementById('fDiscount').value)||0,
+    payment_mode:document.getElementById('fPayment').value,
+    shift:       document.getElementById('fShift').value,
+  };
+  if(!d.sale_date||!d.outlet_name||!d.fuel_type||!d.quantity_sold||!d.unit_price){
+    showToast('Please fill all required fields','err'); return;
+  }
+  d.gross_revenue = d.quantity_sold * d.unit_price;
+  d.net_revenue   = d.gross_revenue * (1 - d.discount_pct/100);
+  addRecords([d]);
+  // clear form
+  ['fDate','fOutlet','fRegion','fQty','fPrice','fDiscount'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+  ['fZone','fFuel','fPayment','fShift'].forEach(id=>{
+    document.getElementById(id).selectedIndex=0;
+  });
+  const s=document.getElementById('formSuccess');
+  s.style.display='block'; setTimeout(()=>s.style.display='none',3000);
+  showToast('Record saved!','ok');
+}
+
+
+
+// ──────────────────────────────────────────────────────────────────────────────
+
+
+/* helpers.js */
+//  HELPERS
+// ──────────────────────────────────────────────────────────────────────────────
+function fmtCr(n){
+  if(n>=10000000) return '₹'+(n/10000000).toFixed(1)+'Cr';
+  if(n>=100000)   return '₹'+(n/100000).toFixed(1)+'L';
+  return '₹'+n.toFixed(0);
+}
+function fmtNum(n){
+  if(n>=10000000) return (n/10000000).toFixed(2)+'Cr';
+  if(n>=100000)   return (n/100000).toFixed(1)+'L';
+  if(n>=1000)     return (n/1000).toFixed(1)+'K';
+  return n.toFixed(0);
+}
+
+function showToast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=`toast ${type} show`;
+  setTimeout(()=>t.className='toast',3000);
+}
+
+function clearAllData(){
+  if(!confirm('Delete all records? This cannot be undone.')) return;
+  DB=[]; saveDB(); refresh(); showToast('All records cleared','ok');
+}
+
+function switchTab(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='records') renderTable();
+}
+
+// set default date to today
+document.getElementById('fDate').valueAsDate=new Date();
+
+// ──────────────────────────────────────────────────────────────────────────────
+
+
+/* data/sampleData.js */
+//  EXAMPLE DATA — pre-loaded on first visit
+// ──────────────────────────────────────────────────────────────────────────────
+const EXAMPLE_DATA = [
+  {sale_date:'2024-01-05',outlet_name:'Connaught Place DV',region:'Delhi NCR',zone:'North',fuel_type:'Petrol',quantity_sold:52.3,unit_price:94.72,discount_pct:0,payment_mode:'UPI',shift:'Morning'},
+  {sale_date:'2024-01-08',outlet_name:'Andheri West DV',region:'Mumbai Metro',zone:'West',fuel_type:'Diesel',quantity_sold:88.0,unit_price:87.62,discount_pct:0.5,payment_mode:'Fleet Card',shift:'Afternoon'},
+  {sale_date:'2024-01-12',outlet_name:'Indiranagar DV BLR',region:'Bengaluru Urban',zone:'South',fuel_type:'Petrol',quantity_sold:41.5,unit_price:94.72,discount_pct:0,payment_mode:'Card',shift:'Morning'},
+  {sale_date:'2024-01-18',outlet_name:'T Nagar DV Chennai',region:'Chennai Metro',zone:'South',fuel_type:'CNG',quantity_sold:30.0,unit_price:76.00,discount_pct:0,payment_mode:'Cash',shift:'Night'},
+  {sale_date:'2024-01-22',outlet_name:'Salt Lake DV Kolkata',region:'Kolkata Metro',zone:'East',fuel_type:'Diesel',quantity_sold:110.0,unit_price:87.62,discount_pct:1,payment_mode:'UPI',shift:'Morning'},
+  {sale_date:'2024-02-03',outlet_name:'Banjara Hills DV HYD',region:'Hyderabad',zone:'South',fuel_type:'Power (Premium)',quantity_sold:28.0,unit_price:102.00,discount_pct:0,payment_mode:'Card',shift:'Afternoon'},
+  {sale_date:'2024-02-09',outlet_name:'Satellite DV Ahmd',region:'Ahmedabad',zone:'West',fuel_type:'Petrol',quantity_sold:65.0,unit_price:94.72,discount_pct:0,payment_mode:'Cash',shift:'Morning'},
+  {sale_date:'2024-02-14',outlet_name:'Pune Highway DV',region:'Pune',zone:'West',fuel_type:'Diesel',quantity_sold:145.0,unit_price:87.62,discount_pct:2,payment_mode:'Fleet Card',shift:'Afternoon'},
+  {sale_date:'2024-02-20',outlet_name:'Rohini Sector DV',region:'Delhi NCR',zone:'North',fuel_type:'CNG',quantity_sold:22.5,unit_price:76.00,discount_pct:0,payment_mode:'UPI',shift:'Morning'},
+  {sale_date:'2024-02-27',outlet_name:'Thane Highway DV',region:'Mumbai Metro',zone:'West',fuel_type:'HSD Industrial',quantity_sold:200.0,unit_price:85.00,discount_pct:1.5,payment_mode:'Credit',shift:'Night'},
+  {sale_date:'2024-03-05',outlet_name:'Connaught Place DV',region:'Delhi NCR',zone:'North',fuel_type:'Power (Premium)',quantity_sold:35.0,unit_price:102.00,discount_pct:0,payment_mode:'Card',shift:'Morning'},
+  {sale_date:'2024-03-11',outlet_name:'Andheri West DV',region:'Mumbai Metro',zone:'West',fuel_type:'Petrol',quantity_sold:78.0,unit_price:94.72,discount_pct:0,payment_mode:'UPI',shift:'Afternoon'},
+  {sale_date:'2024-03-19',outlet_name:'Indiranagar DV BLR',region:'Bengaluru Urban',zone:'South',fuel_type:'Diesel',quantity_sold:92.0,unit_price:87.62,discount_pct:0.5,payment_mode:'Card',shift:'Morning'},
+  {sale_date:'2024-04-02',outlet_name:'T Nagar DV Chennai',region:'Chennai Metro',zone:'South',fuel_type:'Petrol',quantity_sold:48.0,unit_price:94.72,discount_pct:0,payment_mode:'Cash',shift:'Night'},
+  {sale_date:'2024-04-10',outlet_name:'Banjara Hills DV HYD',region:'Hyderabad',zone:'South',fuel_type:'LPG',quantity_sold:18.0,unit_price:68.00,discount_pct:0,payment_mode:'UPI',shift:'Morning'},
+  {sale_date:'2024-04-17',outlet_name:'Satellite DV Ahmd',region:'Ahmedabad',zone:'West',fuel_type:'Diesel',quantity_sold:130.0,unit_price:87.62,discount_pct:1,payment_mode:'Fleet Card',shift:'Afternoon'},
+  {sale_date:'2024-05-03',outlet_name:'Pune Highway DV',region:'Pune',zone:'West',fuel_type:'Petrol',quantity_sold:55.0,unit_price:94.72,discount_pct:0,payment_mode:'UPI',shift:'Morning'},
+  {sale_date:'2024-05-14',outlet_name:'Salt Lake DV Kolkata',region:'Kolkata Metro',zone:'East',fuel_type:'CNG',quantity_sold:40.0,unit_price:76.00,discount_pct:0,payment_mode:'Cash',shift:'Afternoon'},
+  {sale_date:'2024-05-21',outlet_name:'Rohini Sector DV',region:'Delhi NCR',zone:'North',fuel_type:'Power (Premium)',quantity_sold:25.0,unit_price:102.00,discount_pct:0,payment_mode:'Card',shift:'Morning'},
+  {sale_date:'2024-06-06',outlet_name:'Thane Highway DV',region:'Mumbai Metro',zone:'West',fuel_type:'Diesel',quantity_sold:175.0,unit_price:87.62,discount_pct:2,payment_mode:'Fleet Card',shift:'Night'},
+  {sale_date:'2024-06-15',outlet_name:'Connaught Place DV',region:'Delhi NCR',zone:'North',fuel_type:'Petrol',quantity_sold:60.0,unit_price:94.72,discount_pct:0,payment_mode:'UPI',shift:'Morning'},
+  {sale_date:'2024-07-04',outlet_name:'Andheri West DV',region:'Mumbai Metro',zone:'West',fuel_type:'CNG',quantity_sold:35.0,unit_price:76.00,discount_pct:0,payment_mode:'Cash',shift:'Afternoon'},
+  {sale_date:'2024-07-19',outlet_name:'Indiranagar DV BLR',region:'Bengaluru Urban',zone:'South',fuel_type:'Petrol',quantity_sold:70.0,unit_price:94.72,discount_pct:0.5,payment_mode:'UPI',shift:'Morning'},
+  {sale_date:'2024-08-08',outlet_name:'T Nagar DV Chennai',region:'Chennai Metro',zone:'South',fuel_type:'Diesel',quantity_sold:98.0,unit_price:87.62,discount_pct:1,payment_mode:'Card',shift:'Afternoon'},
+  {sale_date:'2024-08-22',outlet_name:'Banjara Hills DV HYD',region:'Hyderabad',zone:'South',fuel_type:'Petrol',quantity_sold:44.0,unit_price:94.72,discount_pct:0,payment_mode:'UPI',shift:'Morning'},
+  {sale_date:'2024-09-10',outlet_name:'Satellite DV Ahmd',region:'Ahmedabad',zone:'West',fuel_type:'HSD Industrial',quantity_sold:250.0,unit_price:85.00,discount_pct:2,payment_mode:'Credit',shift:'Night'},
+  {sale_date:'2024-10-03',outlet_name:'Pune Highway DV',region:'Pune',zone:'West',fuel_type:'Petrol',quantity_sold:62.0,unit_price:94.72,discount_pct:0,payment_mode:'Cash',shift:'Morning'},
+  {sale_date:'2024-10-18',outlet_name:'Salt Lake DV Kolkata',region:'Kolkata Metro',zone:'East',fuel_type:'Power (Premium)',quantity_sold:20.0,unit_price:102.00,discount_pct:0,payment_mode:'Card',shift:'Afternoon'},
+  {sale_date:'2024-11-07',outlet_name:'Thane Highway DV',region:'Mumbai Metro',zone:'West',fuel_type:'Diesel',quantity_sold:160.0,unit_price:87.62,discount_pct:1.5,payment_mode:'Fleet Card',shift:'Morning'},
+  {sale_date:'2024-12-01',outlet_name:'Connaught Place DV',region:'Delhi NCR',zone:'North',fuel_type:'Petrol',quantity_sold:80.0,unit_price:94.72,discount_pct:0,payment_mode:'UPI',shift:'Morning'},
+].map(r => {
+  r.gross_revenue = parseFloat((r.quantity_sold * r.unit_price).toFixed(2));
+  r.net_revenue   = parseFloat((r.gross_revenue * (1 - r.discount_pct / 100)).toFixed(2));
+  return r;
+});
+
+
+/* init.js */
+// INIT
+loadDB();
+if(DB.length === 0){
+  DB = [...EXAMPLE_DATA];
+  saveDB();
+}
+refresh();
+
+</script>
+</body>
+</html>
