@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>DataVault Analytics — Fuel Revenue Intelligence</title>
+
+<!-- Chart.js library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+<!-- App Styles -->
+<link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">DV</div>
+    <div class="nav-title">
+      <h1>DATAVAULT</h1>
+      <p>Fuel Revenue Intelligence Platform</p>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('dash',this)">📊 Dashboard</button>
+    <button class="tab-btn" onclick="switchTab('entry',this)">➕ Add Data</button>
+    <button class="tab-btn" onclick="switchTab('records',this)">🗂 Records</button>
+  </div>
+  <div class="nav-right">
+    <div class="live-pill"><div class="live-dot"></div>Live</div>
+    <div class="rec-count" id="recCount">0 records</div>
+  </div>
+</nav>
+
+<!-- ═══════════════ DASHBOARD PANEL ═══════════════ -->
+<div id="dash" class="panel active">
+
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-lbl">Total Revenue</div>
+      <div class="kpi-val" id="kRevenue">₹0</div>
+      <div class="kpi-meta">Net Revenue (INR)</div></div>
+    <div class="kpi"><div class="kpi-lbl">Volume Sold</div>
+      <div class="kpi-val" id="kVolume">0 L</div>
+      <div class="kpi-meta">Total Litres / Kg</div></div>
+    <div class="kpi"><div class="kpi-lbl">Transactions</div>
+      <div class="kpi-val" id="kTxns">0</div>
+      <div class="kpi-meta">Total Sale Records</div></div>
+    <div class="kpi"><div class="kpi-lbl">Avg Sale Value</div>
+      <div class="kpi-val" id="kAvg">₹0</div>
+      <div class="kpi-meta">Per Transaction</div></div>
+    <div class="kpi"><div class="kpi-lbl">Active Outlets</div>
+      <div class="kpi-val" id="kOutlets">0</div>
+      <div class="kpi-meta">Unique Outlets</div></div>
+  </div>
+
+  <div class="charts-r1">
+    <div class="chart-card">
+      <div class="cc-head"><div class="cc-title">Monthly Revenue Trend</div>
+        <div class="cc-sub">Net revenue grouped by month</div></div>
+      <div id="wrap-monthly"><canvas id="chartMonthly"></canvas>
+        <div class="empty-state" id="emptyMonthly"><div class="empty-icon">📈</div>
+          <div class="empty-txt">Add data to see trend</div></div></div>
+    </div>
+    <div class="chart-card">
+      <div class="cc-head"><div class="cc-title">Fuel Revenue Mix</div>
+        <div class="cc-sub">Share by fuel type</div></div>
+      <div id="wrap-mix"><canvas id="chartMix"></canvas>
+        <div class="empty-state" id="emptyMix"><div class="empty-icon">⛽</div>
+          <div class="empty-txt">Add data to see mix</div></div></div>
+    </div>
+  </div>
+
+  <div class="charts-r2">
+    <div class="chart-card">
+      <div class="cc-head"><div class="cc-title">Zone Performance</div>
+        <div class="cc-sub">Revenue by region</div></div>
+      <canvas id="chartZone"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="cc-head"><div class="cc-title">Payment Modes</div>
+        <div class="cc-sub">Transaction split</div></div>
+      <canvas id="chartPayment"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="cc-head"><div class="cc-title">Fuel Volume</div>
+        <div class="cc-sub">Units sold by type</div></div>
+      <canvas id="chartVolume"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-card" style="margin-bottom:24px;">
+    <div class="cc-head"><div class="cc-title">Top Outlets by Revenue</div>
+      <div class="cc-sub">Ranked leaderboard — all zones</div></div>
+    <table class="outlet-tbl">
+      <thead><tr>
+        <th>#</th><th>Outlet</th><th>Region</th><th>Zone</th>
+        <th>Fuel</th><th>Revenue</th><th>Share</th>
+      </tr></thead>
+      <tbody id="outletBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ═══════════════ ENTRY PANEL ═══════════════ -->
+<div id="entry" class="panel">
+  <div class="entry-grid">
+
+    <!-- MANUAL FORM -->
+    <div class="form-card">
+      <h2>Manual Entry</h2>
+      <p>Fill in the sale details below and click Save Record.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Sale Date</label>
+          <input type="date" id="fDate"/>
+        </div>
+        <div class="form-group">
+          <label>Outlet Name</label>
+          <input type="text" id="fOutlet" placeholder="e.g. Andheri West DV"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Region</label>
+          <input type="text" id="fRegion" placeholder="e.g. Mumbai Metro"/>
+        </div>
+        <div class="form-group">
+          <label>Zone</label>
+          <select id="fZone">
+            <option value="">Select Zone</option>
+            <option>North</option><option>South</option>
+            <option>East</option><option>West</option><option>Central</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fuel Type</label>
+          <select id="fFuel">
+            <option value="">Select Fuel</option>
+            <option>Petrol</option><option>Diesel</option>
+            <option>CNG</option><option>LPG</option>
+            <option>Power (Premium)</option><option>HSD Industrial</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Quantity Sold (L/Kg)</label>
+          <input type="number" id="fQty" placeholder="e.g. 45.5" min="0" step="0.01"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Unit Price (₹/L)</label>
+          <input type="number" id="fPrice" placeholder="e.g. 94.72" min="0" step="0.01"/>
+        </div>
+        <div class="form-group">
+          <label>Discount (%)</label>
+          <input type="number" id="fDiscount" placeholder="0" min="0" max="100" step="0.1"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Payment Mode</label>
+          <select id="fPayment">
+            <option value="">Select Mode</option>
+            <option>Cash</option><option>UPI</option>
+            <option>Card</option><option>Fleet Card</option><option>Credit</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Shift</label>
+          <select id="fShift">
+            <option value="">Select Shift</option>
+            <option>Morning</option><option>Afternoon</option><option>Night</option>
+          </select>
+        </div>
+      </div>
+      <button class="submit-btn" onclick="saveRecord()">💾 SAVE RECORD</button>
+      <div class="form-success" id="formSuccess">✅ Record saved! Dashboard updated.</div>
+    </div>
+
+
+  </div>
+</div>
+
+<!-- ═══════════════ RECORDS PANEL ═══════════════ -->
+<div id="records" class="panel">
+  <div class="records-header">
+    <h2>All Records</h2>
+    <button class="clear-btn" onclick="clearAllData()">🗑 Clear All</button>
+  </div>
+  <div class="search-bar">
+    <input type="text" id="searchBox" placeholder="Search by outlet, region, fuel, payment..." oninput="renderTable()"/>
+  </div>
+  <div class="data-tbl-wrap">
+    <table class="data-tbl">
+      <thead><tr>
+        <th>#</th><th>Date</th><th>Outlet</th><th>Region</th><th>Zone</th>
+        <th>Fuel</th><th>Qty (L)</th><th>Price</th><th>Discount</th>
+        <th>Net Revenue</th><th>Payment</th><th>Shift</th><th></th>
+      </tr></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div class="pg-controls">
+      <div class="pg-info" id="pgInfo">Showing 0–0 of 0</div>
+      <div class="pg-btns">
+        <button class="pg-btn" id="pgPrev" onclick="changePage(-1)">← Prev</button>
+        <button class="pg-btn" id="pgNext" onclick="changePage(1)">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- Scripts — load order matters -->
+<script src="js/config.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/records.js"></script>
+<script src="js/form.js"></script>
+<script src="js/helpers.js"></script>
+<script src="data/sampleData.js"></script>
+<script src="js/init.js"></script>
+
+</body>
+</html>
