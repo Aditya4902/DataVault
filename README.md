@@ -4,7 +4,7 @@
 > A client-side fuel sales analytics dashboard built with vanilla JavaScript and Chart.js.
 > Enter sale records manually and watch all KPIs and charts update live in real time.
 
-🔗 **Live Demo:** [aditya4902.github.io/datavault-analytics](https://aditya4902.github.io/datavault-analytics)
+🔗 **Live Demo:** [aditya4902.github.io/datavault-analytics](https://data-vault-roan.vercel.app/).
 📁 **GitHub:** [github.com/Aditya4902/datavault-analytics](https://github.com/Aditya4902/datavault-analytics)
 
 ---
@@ -116,5 +116,4 @@ Live at: **https://Aditya4902.github.io/datavault-analytics**
 
 ---
 
-## 📄 License
-MIT — free to use and modify.
+
